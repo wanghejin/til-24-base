@@ -1,4 +1,4 @@
-from transformers import BertTokenizer, BertTokenizerFast, BertForQuestionAnswering, TrainingArguments, Trainer
+from transformers import BertTokenizer, BertTokenizerFast, BertForQuestionAnswering, TrainingArguments, Trainer, DistilBertForQuestionAnswering, DistilBertTokenizerFast, DistilBertTokenizer
 import torch
 import pandas as pd
 
@@ -13,9 +13,15 @@ import pandas as pd
 "target": "grey and white fighter jet"
 }
 """
+"""
 model_name = "bert-base-uncased"
 tokenizer = BertTokenizerFast.from_pretrained(model_name)
 model = BertForQuestionAnswering.from_pretrained(model_name)
+"""
+
+model_name = "distilbert-base-uncased"
+tokenizer = DistilBertTokenizerFast.from_pretrained(model_name)
+model = DistilBertForQuestionAnswering.from_pretrained(model_name)
 
 def data_to_df(instances):
         # questions: [target, heading, tool]
@@ -109,7 +115,7 @@ trainer = Trainer(
      model=model,
      args=training_args,
      train_dataset=tokenized_train_dataset,
-     test_dataset=tokenized_test_dataset,
+     eval_dataset=tokenized_test_dataset,
      tokenizer=tokenizer
 )
 

@@ -1,6 +1,5 @@
 from typing import Dict
-
-from transformers import BertTokenizer,AlbertTokenizer,AutoTokenizer, AutoModelForQuestionAnswering ,BertForQuestionAnswering, AlbertForQuestionAnswering
+from transformers import BertTokenizer, BertForQuestionAnswering
 import torch
 
 class NLPManager:
@@ -12,12 +11,11 @@ class NLPManager:
             "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
             "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9"
             }
-        pass
 
     def qa(self, context: str) -> Dict[str, str]:
         # perform NLP question-answering
         to_answer = context
-        questions = ["What is the target?",
+        questions = ["What is the target to neutralize?",
                      "What is the heading in numbers?",
                      "What is the tool to neutralize the target?"]
         answers = []
@@ -28,9 +26,7 @@ class NLPManager:
             answer_start_scores=outputs.start_logits
             answer_end_scores=outputs.end_logits
 
-            answer_start = torch.argmax(
-                answer_start_scores
-            )
+            answer_start = torch.argmax(answer_start_scores)
             answer_end = torch.argmax(answer_end_scores) + 1
             answer = self.tokenizer.convert_tokens_to_string(
                 self.tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
@@ -42,20 +38,5 @@ class NLPManager:
         # answers[0]
         answers[1] = "".join([self.number_map[word] for word in answers[1].split() if word in self.number_map])
         answers[2] = answers[2].replace(" - ", "-")
-        #print(answers)
         
         return {"heading": answers[1], "tool": answers[2], "target": answers[0]}
-
-"""
-from typing import Dict
-
-
-class NLPManager:
-    def __init__(self):
-        # initialize the model here
-        pass
-
-    def qa(self, context: str) -> Dict[str, str]:
-        # perform NLP question-answering
-        return {"heading": "", "tool": "", "target": ""}
-"""

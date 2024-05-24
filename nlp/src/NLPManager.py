@@ -5,7 +5,8 @@ import torch
 class NLPManager:
     def __init__(self):
         self.model_name = './fine-tuned-bert-qa'
-        self.model = BertForQuestionAnswering.from_pretrained(self.model_name)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = BertForQuestionAnswering.from_pretrained(self.model_name).to(self.device)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.number_map = {
             "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
@@ -22,9 +23,11 @@ class NLPManager:
         for question in questions:
             
             inputs = self.tokenizer.encode_plus(question, to_answer, add_special_tokens=True, return_tensors="pt")
+            inputs = inputs.to(self.device)
             input_ids = inputs["input_ids"].tolist()[0]
             
-            outputs = self.model(**inputs)
+            with torch.no_grad():
+                outputs = self.model(**inputs)
             answer_start_scores=outputs.start_logits
             answer_end_scores=outputs.end_logits
 

@@ -1,12 +1,12 @@
 from typing import Dict
-from transformers import BertTokenizer, BertForQuestionAnswering
+from transformers import AutoTokenizer, BertForQuestionAnswering
 import torch
 
 class NLPManager:
     def __init__(self):
-        self.model_name = 'bert-large-uncased-whole-word-masking-finetuned-squad'
+        self.model_name = './fine-tuned-bert-qa'
         self.model = BertForQuestionAnswering.from_pretrained(self.model_name)
-        self.tokenizer = BertTokenizer.from_pretrained(self.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.number_map = {
             "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
             "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9"
@@ -20,8 +20,10 @@ class NLPManager:
                      "What is the tool to neutralize the target?"]
         answers = []
         for question in questions:
+            
             inputs = self.tokenizer.encode_plus(question, to_answer, add_special_tokens=True, return_tensors="pt")
             input_ids = inputs["input_ids"].tolist()[0]
+            
             outputs = self.model(**inputs)
             answer_start_scores=outputs.start_logits
             answer_end_scores=outputs.end_logits
@@ -35,8 +37,10 @@ class NLPManager:
             # Combine the tokens in the answer and print it out.""
             answer = answer.replace("#","")
             answers.append(answer)
-        # answers[0]
+        
         answers[1] = "".join([self.number_map[word] for word in answers[1].split() if word in self.number_map])
         answers[2] = answers[2].replace(" - ", "-")
+        toReturn = {"heading": answers[1], "tool": answers[2], "target": answers[0]}
+        print(toReturn)
         
-        return {"heading": answers[1], "tool": answers[2], "target": answers[0]}
+        return toReturn
